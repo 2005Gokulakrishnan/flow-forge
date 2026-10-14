@@ -1,0 +1,78 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id String @id @default(cuid())
+  googleId String @unique
+  email String @unique
+  name String?
+  picture String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  connections GoogleConnection[]
+  workflows Workflow[]
+  executions Execution[]
+}
+model GoogleConnection {
+  id String @id @default(cuid())
+  userId String
+  user User @relation(fields:[userId], references:[id], onDelete:Cascade)
+  provider String @default("google")
+  googleEmail String?
+  encryptedAccessToken String
+  encryptedRefreshToken String?
+  tokenExpiry DateTime?
+  scopes String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  @@unique([userId, provider])
+}
+model Workflow {
+  id String @id @default(cuid())
+  userId String
+  user User @relation(fields:[userId], references:[id], onDelete:Cascade)
+  name String
+  description String?
+  active Boolean @default(false)
+  webhookToken String @unique @default(cuid())
+  definition Json
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  executions Execution[]
+  @@index([userId, updatedAt])
+}
+model Execution {
+  id String @id @default(cuid())
+  userId String
+  user User @relation(fields:[userId], references:[id], onDelete:Cascade)
+  workflowId String
+  workflow Workflow @relation(fields:[workflowId], references:[id], onDelete:Cascade)
+  status String
+  input Json?
+  output Json?
+  error String?
+  startedAt DateTime @default(now())
+  finishedAt DateTime?
+  steps ExecutionStep[]
+  @@index([workflowId, startedAt])
+}
+model ExecutionStep {
+  id String @id @default(cuid())
+  executionId String
+  execution Execution @relation(fields:[executionId], references:[id], onDelete:Cascade)
+  nodeId String
+  nodeType String
+  status String
+  input Json?
+  output Json?
+  error String?
+  startedAt DateTime @default(now())
+  finishedAt DateTime?
+  @@index([executionId, startedAt])
+}

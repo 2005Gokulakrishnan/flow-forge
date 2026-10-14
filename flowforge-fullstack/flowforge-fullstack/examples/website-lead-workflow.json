@@ -1,0 +1,15 @@
+{
+  "name": "Website Lead → Google Sheets",
+  "active": true,
+  "definition": {
+    "nodes": [
+      {"id":"trigger","type":"webhook","data":{"type":"webhook"}},
+      {"id":"filter","type":"filter","data":{"type":"filter","config":{"field":"city","operator":"equals","value":"Chennai"}}},
+      {"id":"sheets","type":"googleSheets","data":{"type":"googleSheets","config":{"spreadsheetId":"REPLACE_WITH_GOOGLE_SHEET_ID","range":"Sheet1!A:Z","mapping":[{"value":"{{trigger.name}}"},{"value":"{{trigger.phone}}"},{"value":"{{trigger.email}}"},{"value":"{{trigger.city}}"}]}}}
+    ],
+    "edges": [
+      {"id":"edge-1","source":"trigger","target":"filter"},
+      {"id":"edge-2","source":"filter","target":"sheets","sourceHandle":"true"}
+    ]
+  }
+}
